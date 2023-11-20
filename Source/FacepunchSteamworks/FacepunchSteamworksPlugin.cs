@@ -54,14 +54,16 @@ namespace FacepunchSteamworks
                 Debug.Write(LogType.Info, $"Steam settings found. AppId = {settings.AppId}.");
             }
             
-#if !FLAX_EDITOR
 #if !BUILD_RELEASE
             Dispatch.OnDebugCallback += OnDebugCallback;
 #endif
+
+#if !FLAX_EDITOR
             if (SteamClient.RestartAppIfNecessary(settings.AppId))
             {
                 Engine.RequestExit();
             }
+#endif
 
             try
             {
@@ -73,7 +75,6 @@ namespace FacepunchSteamworks
             }
 
             Scripting.Update += OnUpdate;
-#endif
         }
 
         private void OnDebugCallback(CallbackType type, string message, bool server)
@@ -89,14 +90,11 @@ namespace FacepunchSteamworks
         /// <inheritdoc />
         public override void Deinitialize()
         {
-            
-#if !FLAX_EDITOR
             SteamClient.Shutdown();
             Scripting.Update -= OnUpdate;
             
 #if !BUILD_RELEASE
             Dispatch.OnDebugCallback -= OnDebugCallback;
-#endif
 #endif
             base.Deinitialize();
         }
