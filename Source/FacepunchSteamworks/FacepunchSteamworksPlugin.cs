@@ -71,8 +71,6 @@ namespace FacepunchSteamworks
             {
                 Debug.LogWarning($"Steamworks failed to init: {e}");
             }
-            
-            Debug.Log($"SteamClient Valid: {SteamClient.IsValid}");
 
             Scripting.Update += OnUpdate;
 #endif
@@ -80,7 +78,7 @@ namespace FacepunchSteamworks
 
         private void OnDebugCallback(CallbackType type, string message, bool server)
         {
-            Debug.Log($"Type: {type}, Server: {server}, Message: {message}");
+            Debug.Write(LogType.Info, $"Type: {type}, Server: {server}, Message: {message}");
         }
 
         private void OnUpdate()
