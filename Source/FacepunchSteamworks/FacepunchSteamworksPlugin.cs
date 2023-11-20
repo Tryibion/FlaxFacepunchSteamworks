@@ -30,7 +30,7 @@ namespace FacepunchSteamworks
                 Author = "",
                 AuthorUrl = null,
                 HomepageUrl = null,
-                RepositoryUrl = "https://github.com/FlaxEngine/FacepunchSteamworks",
+                RepositoryUrl = "https://github.com/Tryibion/FlaxFacepunchSteamworks",
                 Description = "This is an implementation of Facepunch.Steamworks library for the Flax Engine.",
                 Version = new Version(),
                 IsAlpha = false,
