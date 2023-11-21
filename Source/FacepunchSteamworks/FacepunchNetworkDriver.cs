@@ -77,7 +77,7 @@ public class SteamNetworkConnectionManager : ConnectionManager
 }
 
 /// <summary>
-/// SteamNetworkDriver Script.
+/// Facepunch Network Driver.
 /// </summary>
 public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 {
