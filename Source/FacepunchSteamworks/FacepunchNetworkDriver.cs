@@ -14,7 +14,7 @@ namespace FacepunchSteamworks;
 
 public class SteamNetworkSocketManager : SocketManager
 {
-    public SteamNetworkDriver Driver;
+    public FacepunchNetworkDriver Driver;
 
     public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
     
@@ -26,7 +26,7 @@ public class SteamNetworkSocketManager : SocketManager
         var clients = Driver.ConnectedClients;
         if (!clients.ContainsKey(connection.Id))
         {
-            clients.Add(connection.Id, new SteamNetworkDriver.Client()
+            clients.Add(connection.Id, new FacepunchNetworkDriver.Client()
             {
                 Id = info.Identity.SteamId,
                 SocketConnection = connection,
@@ -79,7 +79,7 @@ public class SteamNetworkConnectionManager : ConnectionManager
 /// <summary>
 /// SteamNetworkDriver Script.
 /// </summary>
-public class SteamNetworkDriver : FlaxEngine.Object, INetworkDriver
+public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 {
     public ulong UserSteamId;
     public ulong TargetSteamId;
@@ -98,7 +98,7 @@ public class SteamNetworkDriver : FlaxEngine.Object, INetworkDriver
     
     public string DriverName()
     {
-        return "SteamNetworkDriver";
+        return "FacepunchNetworkDriver";
     }
 
     public bool Initialize(NetworkPeer host, NetworkConfig config)
