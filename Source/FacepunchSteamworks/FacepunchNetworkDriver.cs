@@ -145,18 +145,24 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
             Debug.Write(LogType.Error, "Failed to initialize socket manager");
             return false;
         }
+        Debug.Write(LogType.Info, "Created steam socket manager.");
         _socketManager.Driver = this;
         _socketManager.NetworkEvent += OnNetworkEvent;
         UserSteamId = SteamClient.SteamId;
 
-        if (!NetworkManager.IsServer)
+        if (NetworkManager.IsHost)
         {
             TargetSteamId = SteamClient.SteamId;
             _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
             _connectionManager.NetworkEvent += OnNetworkEvent;
+            if (_connectionManager == null)
+            {
+                Debug.Write(LogType.Error, "Failed to initialize connection manager");
+                return false;
+            }
+            Debug.Write(LogType.Info, "Created steam connection manager.");
         }
-
-        Debug.Write(LogType.Info, "Created steam socket manager.");
+        
         return true;
     }
 
@@ -179,6 +185,11 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         UserSteamId = SteamClient.SteamId;
         //_connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(UserSteamId);
         _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
+        if (_connectionManager == null)
+        {
+            Debug.Write(LogType.Error, "Failed to initialize connection manager");
+            return false;
+        }
         _connectionManager.NetworkEvent += OnNetworkEvent;
         return true;
     }
@@ -225,17 +236,14 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         eventPtr = new NetworkEvent();
         eventPtr.Sender.ConnectionId = (uint)_eventId;
         eventPtr.EventType = _networkEventType;
-        if (_networkEventType == NetworkEventType.Message)
+        if (_networkEventType == NetworkEventType.Message && _eventData != null)
         {
-            if (_eventData != null)
+            eventPtr.Message = _networkHost.CreateMessage();
+            eventPtr.Message.Length = (uint)_eventData.Length;
+            unsafe
             {
-                eventPtr.Message = _networkHost.CreateMessage();
-                eventPtr.Message.Length = (uint)_eventData.Length;
-                unsafe
-                {
-                    var i = (byte*)Unsafe.AsPointer(ref _eventData);
-                    eventPtr.Message.Buffer = i;
-                }
+                var i = (byte*)Unsafe.AsPointer(ref _eventData);
+                eventPtr.Message.Buffer = i;
             }
         }
 

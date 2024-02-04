@@ -19,6 +19,7 @@ public class FacepunchSteamworks : GameModule
         options.ScriptingAPI.IgnoreMissingDocumentationWarnings = true;
 
         var facepunchLibsPath = Path.Combine(FolderPath, "..", "..", "Content", "FacepunchLibs");
+
         switch (options.Platform.Target)
         {
             case TargetPlatform.Windows:
@@ -36,7 +37,8 @@ public class FacepunchSteamworks : GameModule
                 options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.xml"));
                 //options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
                 break;
-            default: throw new InvalidPlatformException(options.Platform.Target);
+            default: /*throw new InvalidPlatformException(options.Platform.Target)*/ break;
         }
+        
     }
 }
