@@ -22,11 +22,10 @@ public class SteamNetworkSocketManager : SocketManager
     {
         if (Driver == null)
             return;
-
-        var clients = Driver.ConnectedClients;
-        if (!clients.ContainsKey(connection.Id))
+        
+        if (!Driver.ConnectedClients.ContainsKey(connection.Id))
         {
-            clients.Add(connection.Id, new FacepunchNetworkDriver.Client()
+            Driver.ConnectedClients.Add(connection.Id, new FacepunchNetworkDriver.Client
             {
                 Id = info.Identity.SteamId,
                 SocketConnection = connection,
@@ -63,7 +62,7 @@ public class SteamNetworkSocketManager : SocketManager
 public class SteamNetworkConnectionManager : ConnectionManager
 {
     public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
-    
+
     public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
     {
         byte[] bytes = new byte[size];
@@ -148,7 +147,6 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         Debug.Write(LogType.Info, "Created steam socket manager.");
         _socketManager.Driver = this;
         _socketManager.NetworkEvent += OnNetworkEvent;
-        UserSteamId = SteamClient.SteamId;
 
         if (NetworkManager.IsHost)
         {
@@ -182,8 +180,6 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public bool Connect()
     {
-        UserSteamId = SteamClient.SteamId;
-        //_connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(UserSteamId);
         _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
         if (_connectionManager == null)
         {
