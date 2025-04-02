@@ -1,5 +1,4 @@
 using System;
-using FlaxEditor.Content.Settings;
 using FlaxEngine;
 using FlaxEngine.Networking;
 using Steamworks;
