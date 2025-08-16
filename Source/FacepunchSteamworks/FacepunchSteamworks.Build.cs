@@ -28,17 +28,17 @@ public class FacepunchSteamworks : GameModule
             case TargetPlatform.Windows:
                 options.ScriptingAPI.FileReferences.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Win64.dll"));
                 options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Win64.xml"));
-                options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Win64.pdb"));
+                //options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Win64.pdb"));
                 break;
             case TargetPlatform.Linux:
                 options.ScriptingAPI.FileReferences.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.dll"));
                 options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.xml"));
-                options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
+                //options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
                 break;
             case TargetPlatform.Mac:
                 options.ScriptingAPI.FileReferences.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.dll"));
                 options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.xml"));
-                options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
+                //options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
                 break;
             default: /*throw new InvalidPlatformException(options.Platform.Target)*/ break;
         }
