@@ -60,13 +60,16 @@ public class SteamNetworkSocketManager : SocketManager
 
 public class SteamNetworkConnectionManager : ConnectionManager
 {
+    
+    public FacepunchNetworkDriver Driver;
+    
     public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
 
     public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
     {
         byte[] bytes = new byte[size];
         Marshal.Copy(data, bytes, 0, size);
-        NetworkEvent?.Invoke(NetworkEventType.Message, NetworkManager.ServerClientId, bytes);
+        NetworkEvent?.Invoke(NetworkEventType.Message, Driver.TargetSteamId, bytes);
     }
 }
 
@@ -89,6 +92,8 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
     private SteamNetworkSocketManager _socketManager;
     private NetworkConfig _config;
     private SteamNetworkConnectionManager _connectionManager;
+    public bool IsServer = false;
+    public bool IsClient = false;
 
     public string DriverName()
     {
@@ -147,19 +152,19 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         _socketManager.Driver = this;
         _socketManager.NetworkEvent += OnNetworkEvent;
 
-        if (NetworkManager.IsHost)
+        IsServer = true;
+
+        TargetSteamId = SteamClient.SteamId;
+        _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
+        _connectionManager.Driver = this;
+        _connectionManager.NetworkEvent += OnNetworkEvent;
+        if (_connectionManager == null)
         {
-            TargetSteamId = SteamClient.SteamId;
-            _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
-            _connectionManager.NetworkEvent += OnNetworkEvent;
-            if (_connectionManager == null)
-            {
-                Debug.Write(LogType.Error, "Failed to initialize connection manager");
-                return false;
-            }
-            Debug.Write(LogType.Info, "Created steam connection manager.");
+            Debug.Write(LogType.Error, "Failed to initialize connection manager");
+            return false;
         }
-        
+        Debug.Write(LogType.Info, "Created steam connection manager.");
+
         return true;
     }
 
@@ -186,6 +191,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
             return false;
         }
         _connectionManager.NetworkEvent += OnNetworkEvent;
+        IsClient = true;
         return true;
     }
 
@@ -202,6 +208,9 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
             _connectionManager.Connection.Close();
             _connectionManager.NetworkEvent -= OnNetworkEvent;
         }
+
+        IsServer = false;
+        IsClient = false;
     }
 
     public void Disconnect(NetworkConnection connection)
@@ -252,7 +261,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public void SendMessage(NetworkChannelType channelType, NetworkMessage message)
     {
-        if (NetworkManager.IsServer)
+        if (IsServer)
             return;
 
         unsafe
@@ -265,7 +274,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public void SendMessage(NetworkChannelType channelType, NetworkMessage message, NetworkConnection target)
     {
-        if (!NetworkManager.IsServer)
+        if (!IsServer)
             return;
         /*
         byte[] bytes = new byte[message.Length];
@@ -290,7 +299,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public void SendMessage(NetworkChannelType channelType, NetworkMessage message, NetworkConnection[] targets)
     {
-        if (!NetworkManager.IsServer)
+        if (!IsServer)
             return;
 
         foreach (var c in _socketManager.Connected)
