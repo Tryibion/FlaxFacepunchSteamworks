@@ -39,8 +39,8 @@ public class FacepunchSteamworks : GameModule
                 options.ScriptingAPI.FileReferences.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.dll"));
                 options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.xml"));
                 //options.DependencyFiles.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.pdb"));
-                options.Libraries.Add(Path.Combine(redistPath, "linux64", "libsteam_api64.so"));
-                options.DependencyFiles.Add(Path.Combine(redistPath, "linux64", "libsteam_api64.so"));
+                options.Libraries.Add(Path.Combine(redistPath, "linux64", "libsteam_api.so"));
+                options.DependencyFiles.Add(Path.Combine(redistPath, "linux64", "libsteam_api.so"));
                 break;
             case TargetPlatform.Mac:
                 options.ScriptingAPI.FileReferences.Add(Path.Combine(facepunchLibsPath, "Facepunch.Steamworks.Posix.dll"));
