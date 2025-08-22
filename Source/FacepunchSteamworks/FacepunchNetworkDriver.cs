@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using FlaxEngine;
 using FlaxEngine.Networking;
 using Steamworks;
@@ -11,87 +9,28 @@ using Debug = FlaxEngine.Debug;
 
 namespace FacepunchSteamworks;
 
-public class SteamNetworkSocketManager : SocketManager
-{
-    public FacepunchNetworkDriver Driver;
-
-    public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
-    
-    public override void OnConnected(Connection connection, ConnectionInfo info)
-    {
-        if (Driver == null)
-            return;
-        
-        if (!Driver.ConnectedClients.ContainsKey(connection.Id))
-        {
-            Driver.ConnectedClients.Add(connection.Id, new FacepunchNetworkDriver.Client
-            {
-                Id = info.Identity.SteamId,
-                SocketConnection = connection,
-            });
-            
-            Debug.Write(LogType.Info, $"Connected with Steam user {info.Identity.SteamId}");
-            NetworkEvent?.Invoke(NetworkEventType.Connected, connection.Id, default);
-        }
-    }
-
-    public override void OnConnecting(Connection connection, ConnectionInfo info)
-    {
-        Debug.Write(LogType.Info, $"Accepting connection from Steam user {info.Identity.SteamId}");
-        connection.Accept();
-    }
-
-    public override void OnDisconnected(Connection connection, ConnectionInfo info)
-    {
-        if (Driver == null)
-            return;
-        Driver.ConnectedClients.Remove(connection.Id);
-        Debug.Write(LogType.Info, $"Disconnected Steam user {info.Identity.SteamId}");
-        NetworkEvent?.Invoke(NetworkEventType.Disconnected, connection.Id, default);
-    }
-
-    public override void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
-    {
-        byte[] bytes = new byte[size];
-        Marshal.Copy(data, bytes, 0, size);
-        NetworkEvent?.Invoke(NetworkEventType.Message, connection.Id, bytes);
-    }
-}
-
-public class SteamNetworkConnectionManager : ConnectionManager
-{
-    
-    public FacepunchNetworkDriver Driver;
-    
-    public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
-
-    public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
-    {
-        byte[] bytes = new byte[size];
-        Marshal.Copy(data, bytes, 0, size);
-        NetworkEvent?.Invoke(NetworkEventType.Message, Driver.TargetSteamId, bytes);
-    }
-}
 
 /// <summary>
 /// Facepunch Network Driver.
 /// </summary>
 public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 {
-    public ulong UserSteamId;
-    public ulong TargetSteamId;
-    public Dictionary<ulong, Client> ConnectedClients;
-
     public class Client
     {
         public SteamId Id;
         public Connection SocketConnection;
     }
 
-    private NetworkPeer _networkHost;
-    private SteamNetworkSocketManager _socketManager;
     private NetworkConfig _config;
+    private SteamNetworkSocketManager _socketManager;
     private SteamNetworkConnectionManager _connectionManager;
+    public Dictionary<ulong, Client> ConnectedClients;
+    private NetworkPeer _networkPeer;
+    Queue<NetworkEvent> _networkEventQueue = new();
+
+    public ulong UserSteamId;
+    public ulong TargetSteamId;
+
     public bool IsServer = false;
     public bool IsClient = false;
 
@@ -100,17 +39,16 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         return "FacepunchNetworkDriver";
     }
 
-    public bool Initialize(NetworkPeer host, NetworkConfig config)
+    public bool Initialize(NetworkPeer peer, NetworkConfig config)
     {
-        _networkHost = host;
+        _networkPeer = peer;
         _config = config;
+        UserSteamId = SteamClient.SteamId;
 
         SteamNetworkingUtils.SendBufferSize = config.MessageSize;
         ConnectedClients = new Dictionary<ulong, Client>();
 
         SteamNetworkingUtils.InitRelayNetworkAccess();
-
-        UserSteamId = SteamClient.SteamId;
 
         Scripting.Update += OnUpdate;
 
@@ -132,65 +70,51 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public void Dispose()
     {
+        Scripting.Update -= OnUpdate;
+
         _socketManager?.Close();
         _connectionManager?.Close();
         _connectionManager = null;
         _socketManager = null;
-
-        Scripting.Update -= OnUpdate;
     }
 
     public bool Listen()
     {
+        TargetSteamId = SteamClient.SteamId;
+        Debug.Log($"[Steam Host] Initializing host (Steam id: {TargetSteamId})");
+
         _socketManager = SteamNetworkingSockets.CreateRelaySocket<SteamNetworkSocketManager>();
         if (_socketManager == null)
         {
-            Debug.Write(LogType.Error, "Failed to initialize socket manager");
+            Debug.LogError("[Steam Host] Failed to initialize socket manager");
             return false;
         }
-        Debug.Write(LogType.Info, "Created steam socket manager.");
+
+        Debug.Log("[Steam Host] Created Steam socket manager.");
+
         _socketManager.Driver = this;
         _socketManager.NetworkEvent += OnNetworkEvent;
 
         IsServer = true;
-
-        TargetSteamId = SteamClient.SteamId;
-        _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
-        _connectionManager.Driver = this;
-        _connectionManager.NetworkEvent += OnNetworkEvent;
-        if (_connectionManager == null)
-        {
-            Debug.Write(LogType.Error, "Failed to initialize connection manager");
-            return false;
-        }
-        Debug.Write(LogType.Info, "Created steam connection manager.");
-
         return true;
-    }
-
-    private NetworkEventType _networkEventType = NetworkEventType.Undefined;
-    private ulong _eventId;
-    private byte[]? _eventData;
-
-    private void OnNetworkEvent(NetworkEventType eventType, ulong id, byte[] data)
-    {
-        _networkEventType = eventType;
-        _eventId = id;
-        if (data.Length > 0)
-        {
-            _eventData = data;
-        }
     }
 
     public bool Connect()
     {
+        Debug.Log($"[Steam Client] Initializing client connection (host Steam id: {TargetSteamId})");
+
         _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
         if (_connectionManager == null)
         {
-            Debug.Write(LogType.Error, "Failed to initialize connection manager");
+            Debug.LogError("[Steam Client] Failed to initialize connection manager");
             return false;
         }
+
+        _connectionManager.Driver = this;
         _connectionManager.NetworkEvent += OnNetworkEvent;
+
+        Debug.Log("[Steam Client] Created Steam connection manager.");
+
         IsClient = true;
         return true;
     }
@@ -235,27 +159,38 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
             }
         }
     }
-    public bool PopEvent(out NetworkEvent eventPtr)
+
+    private void OnNetworkEvent(NetworkEventType eventType, ulong id, byte[] data)
     {
-        eventPtr = new NetworkEvent();
-        eventPtr.Sender.ConnectionId = (uint)_eventId;
-        eventPtr.EventType = _networkEventType;
-        if (_networkEventType == NetworkEventType.Message && _eventData != null)
+        if (eventType == NetworkEventType.Message && data != null)
         {
-            eventPtr.Message = _networkHost.CreateMessage();
-            eventPtr.Message.Length = (uint)_eventData.Length;
+            NetworkEvent ev = new();
+            ev.EventType = eventType;
+            ev.Sender.ConnectionId = (uint)id;
+
+            ev.Message = _networkPeer.CreateMessage();
+            ev.Message.Length = (uint)data.Length;
             unsafe
             {
-                var i = (byte*)Unsafe.AsPointer(ref _eventData);
-                eventPtr.Message.Buffer = i;
+                fixed (byte* ptr = data)
+                {
+                    ev.Message.Buffer = ptr;
+                }
             }
+
+            _networkEventQueue.Enqueue(ev);
+        }
+    }
+
+    public bool PopEvent(out NetworkEvent networkEvent)
+    {
+        if (_networkEventQueue.Count == 0)
+        {
+            networkEvent = new();
+            return false;
         }
 
-        // Reset data
-        _networkEventType = NetworkEventType.Undefined;
-        _eventId = 0;
-        _eventData = null;
-
+        networkEvent = _networkEventQueue.Dequeue();
         return true;
     }
 
@@ -264,34 +199,19 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         if (IsServer)
             return;
 
-        unsafe
-        {
-            var ptr = (IntPtr)message.Buffer;
-            var length = (int)message.Length;
-            _connectionManager.Connection.SendMessage(ptr, length, ConvertToSendType(channelType));
-        }
+        SendUsingConnection(_connectionManager.Connection, channelType, message);
     }
 
     public void SendMessage(NetworkChannelType channelType, NetworkMessage message, NetworkConnection target)
     {
         if (!IsServer)
             return;
-        /*
-        byte[] bytes = new byte[message.Length];
-        message.ReadBytes(bytes, bytes.Length);
-        _connectionManager.Connection.SendMessage(bytes, ConvertSendType(channelType));
-        */
 
         foreach (var c in _socketManager.Connected)
         {
             if (c.Id == target.ConnectionId)
             {
-                unsafe
-                {
-                    var ptr = (IntPtr)message.Buffer;
-                    var length = (int)message.Length;
-                    c.SendMessage(ptr, length, ConvertToSendType(channelType));
-                }
+                SendUsingConnection(c, channelType, message);
                 break;
             }
         }
@@ -306,13 +226,18 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         {
             if (targets.Any(t => c.Id == t.ConnectionId))
             {
-                unsafe
-                {
-                    var ptr = (IntPtr)message.Buffer;
-                    var length = (int)message.Length;
-                    c.SendMessage(ptr, length, ConvertToSendType(channelType));
-                }
+                SendUsingConnection(c, channelType, message);
             }
+        }
+    }
+
+    void SendUsingConnection(Connection connection, NetworkChannelType channelType, NetworkMessage message)
+    {
+        unsafe
+        {
+            var ptr = (IntPtr)message.Buffer;
+            var length = (int)message.Length;
+            connection.SendMessage(ptr, length, ConvertToSendType(channelType));
         }
     }
 
@@ -338,11 +263,23 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public NetworkDriverStats GetStats()
     {
-        throw new NotImplementedException();
+        // TODO: need proper implementation
+        return new NetworkDriverStats()
+        {
+            RTT = -1,
+            TotalDataReceived = 0,
+            TotalDataSent = 0,
+        };
     }
 
     public NetworkDriverStats GetStats(NetworkConnection target)
     {
-        throw new NotImplementedException();
+        // TODO: need proper implementation
+        return new NetworkDriverStats()
+        {
+            RTT = -1,
+            TotalDataReceived = 0,
+            TotalDataSent = 0,
+        };
     }
 }
