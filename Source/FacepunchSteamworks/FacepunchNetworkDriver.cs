@@ -162,24 +162,26 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     private void OnNetworkEvent(NetworkEventType eventType, ulong id, byte[] data)
     {
-        if (eventType == NetworkEventType.Message && data != null)
+        if (data == null)
         {
-            NetworkEvent ev = new();
-            ev.EventType = eventType;
-            ev.Sender.ConnectionId = (uint)id;
-
-            ev.Message = _networkPeer.CreateMessage();
-            ev.Message.Length = (uint)data.Length;
-            unsafe
-            {
-                fixed (byte* ptr = data)
-                {
-                    ev.Message.Buffer = ptr;
-                }
-            }
-
-            _networkEventQueue.Enqueue(ev);
+            data = [];
         }
+
+        NetworkEvent ev = new();
+        ev.EventType = eventType;
+        ev.Sender.ConnectionId = (uint)id;
+
+        ev.Message = _networkPeer.CreateMessage();
+        ev.Message.Length = (uint)data.Length;
+        unsafe
+        {
+            fixed (byte* ptr = data)
+            {
+                ev.Message.Buffer = ptr;
+            }
+        }
+
+        _networkEventQueue.Enqueue(ev);
     }
 
     public bool PopEvent(out NetworkEvent networkEvent)
