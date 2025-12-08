@@ -63,11 +63,12 @@ public class FacepunchSteamworksPlugin : GamePlugin
     {
         base.Initialize();
 
-        _settings = Engine.GetCustomSettings("Steam").Instance as FacepunchSteamSettings;
+        _settings = Engine.GetCustomSettings("Steam")?.Instance as FacepunchSteamSettings;
         if (_settings == null)
         {
-            Debug.LogError("No steam settings found.");
+            Debug.LogError("No steam settings found. Ensure you've created custom settings of type FacepunchSteamSettings, and that you've added it in [ GameSettings > Other Settings > Custom Settings ] and name it \"Steam\". Forcing Shutdown.");
             Engine.RequestExit();
+            return;
         }
         else
         {

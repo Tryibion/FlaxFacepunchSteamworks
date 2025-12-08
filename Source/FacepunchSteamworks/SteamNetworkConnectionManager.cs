@@ -13,6 +13,13 @@ public class SteamNetworkConnectionManager : ConnectionManager
 
     public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
 
+    public override void OnConnected(ConnectionInfo info)
+    {
+        base.OnConnected(info);
+
+        NetworkEvent?.Invoke(NetworkEventType.Connected, Driver.TargetSteamId, []);
+    }
+
     public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
     {
         byte[] bytes = new byte[size];
