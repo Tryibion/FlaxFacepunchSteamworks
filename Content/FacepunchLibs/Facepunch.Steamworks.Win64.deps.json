@@ -1,11 +1,12 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v6.0",
+    "name": ".NETStandard,Version=v2.1/",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v6.0": {
+    ".NETStandard,Version=v2.1": {},
+    ".NETStandard,Version=v2.1/": {
       "Facepunch.Steamworks.Win64/1.0.0": {
         "runtime": {
           "Facepunch.Steamworks.Win64.dll": {}

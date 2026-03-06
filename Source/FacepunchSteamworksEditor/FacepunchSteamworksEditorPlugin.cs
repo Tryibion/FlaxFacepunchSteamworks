@@ -4,6 +4,7 @@ using System.IO;
 using FacepunchSteamworks;
 using FlaxEditor;
 using FlaxEditor.Content;
+using FlaxEditor.Content.Settings;
 using FlaxEngine;
 
 namespace FacepunchSteamworksEditor;
@@ -22,6 +23,20 @@ public class FacepunchSteamworksEditorPlugin : EditorPlugin
         GameCooker.DeployFiles += OnDeployFiles;
         _assetProxy = new CustomSettingsProxy(typeof(FacepunchSteamSettings), "Steam");
         Editor.ContentDatabase.Proxy.Add(_assetProxy);
+        
+        // Auto create and set steam settings
+        var settingsPath = Path.Combine(Globals.ProjectContentFolder, "Settings", "Facepunch Steamworks Settings.json");
+        if (!File.Exists(settingsPath))
+        {
+            Editor.SaveJsonAsset(settingsPath, new FacepunchSteamSettings());
+        }
+        var jsonAsset = Engine.GetCustomSettings("Steam");
+        if (jsonAsset == null)
+        {
+            jsonAsset = Content.LoadAsync<JsonAsset>(settingsPath);
+            GameSettings.SetCustomSettings("Steam", jsonAsset);
+        }
+        
         Editor.ContentDatabase.Rebuild(true);
     }
 

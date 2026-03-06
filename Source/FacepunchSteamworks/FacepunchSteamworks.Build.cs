@@ -24,7 +24,7 @@ public class FacepunchSteamworks : GameModule
         
         options.ScriptingAPI.IgnoreMissingDocumentationWarnings = true;
 
-        var facepunchLibsPath = Path.Combine(FolderPath, "..", "..", "Content", "FacepunchLibs");
+        var facepunchLibsPath = Path.GetFullPath(Path.Combine(FolderPath, "..", "..", "Content", "FacepunchLibs"));
         var redistPath = Path.Combine(facepunchLibsPath, "redistributable_bin");
         switch (options.Platform.Target)
         {
@@ -49,7 +49,9 @@ public class FacepunchSteamworks : GameModule
                 options.Libraries.Add(Path.Combine(redistPath, "osx", "libsteam_api.dylib"));
                 options.DependencyFiles.Add(Path.Combine(redistPath, "osx", "libsteam_api.dylib"));
                 break;
-            default: /*throw new InvalidPlatformException(options.Platform.Target)*/ break;
+            default: 
+                /*throw new InvalidPlatformException(options.Platform.Target)*/ 
+                break;
         }
         
     }
