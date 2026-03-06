@@ -7,32 +7,6 @@ using SettingsBase = FlaxEngine.SettingsBase;
 namespace FacepunchSteamworks;
 
 /// <summary>
-/// Facepunch steam settings.
-/// </summary>
-public class FacepunchSteamSettings : SettingsBase
-{
-    /// <summary>
-    /// If true, initializes steam during the `FacepunchSteamworksPlugin` initialization.
-    /// </summary>
-    public bool InitializeSteamAutomatically = true;
-    
-    /// <summary>
-    /// If true, while not in the editor, the app will reboot if steam is required to start it.
-    /// </summary>
-    public bool RestartAppIfSteamRequires = true;
-    
-    /// <summary>
-    /// If true, while the build is not in release mode, the steam library will log callbacks.
-    /// </summary>
-    public bool UseSteamDebugCallback = true;
-    
-    /// <summary>
-    /// The steam app id. 480 is SpaceWars.
-    /// </summary>
-    public uint AppId = 480;
-}
-
-/// <summary>
 /// The FacepunchSteamworksPlugin used to interface with the Facepunch.Steamworks library.
 /// </summary>
 /// <seealso cref="FlaxEngine.GamePlugin" />
@@ -56,6 +30,11 @@ public class FacepunchSteamworksPlugin : GamePlugin
         };
     }
     
+    /// <summary>
+    /// The Facepunch steam settings instance.
+    /// </summary>
+    public FacepunchSteamSettings Settings => _settings;
+    
     private FacepunchSteamSettings _settings;
 
     /// <inheritdoc />
@@ -74,6 +53,11 @@ public class FacepunchSteamworksPlugin : GamePlugin
         {
             Debug.Write(LogType.Info, $"Steam settings found. AppId = {_settings.AppId}.");
         }
+        
+#if FLAX_EDITOR
+        if (!_settings.InitializeInEditor)
+            return;
+#endif
 
 #if !BUILD_RELEASE
         if (_settings.UseSteamDebugCallback)
@@ -154,6 +138,11 @@ public class FacepunchSteamworksPlugin : GamePlugin
     /// <inheritdoc />
     public override void Deinitialize()
     {
+#if FLAX_EDITOR
+        if (!_settings.InitializeInEditor)
+            return;
+#endif
+        
         if (SteamClient.IsValid)
             SteamClient.Shutdown();
         Scripting.Update -= OnUpdate;
@@ -162,6 +151,8 @@ public class FacepunchSteamworksPlugin : GamePlugin
         if (_settings.UseSteamDebugCallback)
             Dispatch.OnDebugCallback -= OnDebugCallback;
 #endif
+        
+        _settings = null;
         base.Deinitialize();
     }
 }
