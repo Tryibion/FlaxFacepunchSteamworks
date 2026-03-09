@@ -17,6 +17,7 @@ namespace FacepunchSteamworksEditor;
 public class FacepunchSteamworksEditorPlugin : EditorPlugin
 {
     private AssetProxy _assetProxy;
+    private JsonAsset _jsonAsset;
     MainMenuButton _pluginButton;
     ContextMenuButton _openButton;
 
@@ -34,24 +35,29 @@ public class FacepunchSteamworksEditorPlugin : EditorPlugin
         {
             Editor.SaveJsonAsset(settingsPath, new FacepunchSteamSettings());
         }
-        var jsonAsset = Engine.GetCustomSettings("Steam");
-        if (jsonAsset == null)
+        _jsonAsset = Engine.GetCustomSettings("Steam");
+        if (_jsonAsset == null)
         {
-            jsonAsset = Content.LoadAsync<JsonAsset>(settingsPath);
-            GameSettings.SetCustomSettings("Steam", jsonAsset);
+            _jsonAsset = Content.LoadAsync<JsonAsset>(settingsPath);
+            GameSettings.SetCustomSettings("Steam", _jsonAsset);
         }
 
-        _pluginButton = Editor.UI.MainMenu.GetButton("Plugins") ?? Editor.UI.MainMenu.AddButton("Plugins");
-        _openButton = _pluginButton.ContextMenu.AddButton("Open Facepunch Steamworks Settings", () =>
-        {
-            Editor.ContentEditing.Open(jsonAsset);
-        });
+        _pluginButton = Editor.UI.MainMenu.GetOrAddButton("Plugins");
+        _openButton = _pluginButton.ContextMenu.AddButton("Open Facepunch Steamworks Settings", OpenJsonAsset);
 
         Editor.ContentDatabase.Rebuild(true);
     }
 
+    private void OpenJsonAsset()
+    {
+        Editor.ContentEditing.Open(_jsonAsset);
+    }
+
     public override void Deinitialize()
     {
+        _openButton.Clicked -= OpenJsonAsset;
+        Content.UnloadAsset(_jsonAsset);
+        _jsonAsset = null;
         Editor.ContentDatabase.Proxy.Remove(_assetProxy);
         _openButton.Dispose();
         _openButton = null;
