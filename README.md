@@ -8,3 +8,6 @@ To add this plugin project to your game, follow the instructions in the [Flax En
 
 ## Setup
 The settings are auto created for you in the `Content/Settings` folder. You can open them and change the AppID to your Steam AppID.
+
+## Information
+To exclude the library and the plugin code from your build, you can add `EXCLUDE_STEAMWORKS` to the list of custom defines in the build settings or the game cooker.
