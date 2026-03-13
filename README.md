@@ -9,5 +9,17 @@ To add this plugin project to your game, follow the instructions in the [Flax En
 ## Setup
 The settings are auto created for you in the `Content/Settings` folder. You can open them and change the AppID to your Steam AppID.
 
-## Information
+## Excluding the plugin
 To exclude the library and the plugin code from your build, you can add `EXCLUDE_STEAMWORKS` to the list of custom defines in the build settings or the game cooker.
+
+You can add code similar to this in your `Game.Build.cs` file under he setup method.
+
+```csharp
+if (!Configuration.CustomDefines.Contains("EXCLUDE_STEAMWORKS"))
+{
+    options.PublicDependencies.Add("FacepunchSteamworks");
+    options.ScriptingAPI.Defines.Add("EXCLUDE_STEAMWORKS");
+}
+```
+
+This will exclude the plugin and add a preprocessor definition that you can wrap your API calls in using `#if !EXCLUDE_STEAMWORKS`.
