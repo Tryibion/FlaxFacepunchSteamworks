@@ -12,7 +12,7 @@ The settings are auto created for you in the `Content/Settings` folder. You can 
 ## Excluding the plugin
 To exclude the library and the plugin code from your build, you can add `EXCLUDE_STEAMWORKS` to the list of custom defines in the build settings or the game cooker.
 
-You can add code similar to this in your `Game.Build.cs` file under he setup method.
+You can add code similar to this in your `Game.Build.cs` file under the `Setup` method.
 
 ```csharp
 if (!Configuration.CustomDefines.Contains("EXCLUDE_STEAMWORKS"))
