@@ -1,3 +1,5 @@
+#if !EXCLUDE_STEAMWORKS
+
 using System;
 using FlaxEngine;
 using FlaxEngine.Networking;
@@ -157,3 +159,4 @@ public class FacepunchSteamworksPlugin : GamePlugin
     }
 }
 
+#endif

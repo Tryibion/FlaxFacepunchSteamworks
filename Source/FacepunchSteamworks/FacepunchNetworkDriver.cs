@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !EXCLUDE_STEAMWORKS
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FlaxEngine;
@@ -8,7 +10,6 @@ using Steamworks.Data;
 using Debug = FlaxEngine.Debug;
 
 namespace FacepunchSteamworks;
-
 
 /// <summary>
 /// Facepunch Network Driver.
@@ -285,3 +286,5 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         };
     }
 }
+
+#endif

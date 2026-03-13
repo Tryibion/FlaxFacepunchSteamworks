@@ -8,21 +8,43 @@ public class FacepunchSteamworks : GameModule
     public override void Init()
     {
         base.Init();
-        
-        BuildNativeCode = true;
     }
 
     /// <inheritdoc />
     public override void Setup(BuildOptions options)
     {
         base.Setup(options);
-
         
+        options.ScriptingAPI.IgnoreMissingDocumentationWarnings = true;
+
+        if (Configuration.CustomDefines.Contains("EXCLUDE_STEAMWORKS"))
+        {
+            options.ScriptingAPI.Defines.Add("EXCLUDE_STEAMWORKS");
+            options.PublicDefinitions.Add("EXCLUDE_STEAMWORKS");
+
+            // Clear cached files
+            Directory.Delete(Path.Combine(FolderPath, "..", "..", "Binaries", "FacepunchSteamworksTarget"), true);
+            Directory.Delete(Path.Combine(FolderPath, "..", "..", "Cache"), true);
+            var gameTargetDirectory = Path.Combine(Globals.Root, "Binaries", "GameTarget");
+            var binFiles = Directory.GetFiles(gameTargetDirectory, "Facepunch.Steamworks.*", SearchOption.AllDirectories);
+            foreach (var file in binFiles)
+            {
+                File.Delete(file);
+            }
+
+            Deploy = false;
+            BuildCSharp = false;
+            BuildNativeCode = false;
+            return;
+        }
+        else
+        {
+            BuildNativeCode = true;
+        }
+
         Tags["Network"] = string.Empty;
         options.PublicDependencies.Add("Networking");
         options.ScriptingAPI.SystemReferences.Add("System.Runtime");
-        
-        options.ScriptingAPI.IgnoreMissingDocumentationWarnings = true;
 
         var facepunchLibsPath = Path.GetFullPath(Path.Combine(FolderPath, "..", "..", "Content", "FacepunchLibs"));
         var redistPath = Path.Combine(facepunchLibsPath, "redistributable_bin");

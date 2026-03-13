@@ -1,3 +1,5 @@
+#if !EXCLUDE_STEAMWORKS
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -35,3 +37,5 @@ public class SteamNetworkConnectionManager : ConnectionManager
         NetworkEvent?.Invoke(NetworkEventType.Message, Driver.TargetSteamId, bytes);
     }
 }
+
+#endif
