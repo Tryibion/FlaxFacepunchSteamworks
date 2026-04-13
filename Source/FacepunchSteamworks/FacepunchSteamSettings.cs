@@ -1,4 +1,4 @@
-﻿using FlaxEditor.Content.Settings;
+﻿using FlaxEngine;
 
 namespace FacepunchSteamworks;
 
