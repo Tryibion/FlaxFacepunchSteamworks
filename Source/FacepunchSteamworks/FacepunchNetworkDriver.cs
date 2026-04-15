@@ -45,6 +45,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         _networkPeer = peer;
         _config = config;
         UserSteamId = SteamClient.SteamId;
+        TargetSteamId = PluginManager.GetPlugin<FacepunchSteamworksPlugin>().Settings.TargetSteamId;
 
         SteamNetworkingUtils.SendBufferSize = config.MessageSize;
         ConnectedClients = new Dictionary<ulong, Client>();

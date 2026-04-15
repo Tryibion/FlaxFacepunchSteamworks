@@ -6,6 +6,7 @@ using FlaxEngine.Networking;
 using Steamworks;
 using System;
 using System.ComponentModel;
+using System.Runtime;
 using SettingsBase = FlaxEngine.SettingsBase;
 
 namespace FacepunchSteamworks;
@@ -59,7 +60,16 @@ public class FacepunchSteamworksPlugin : GamePlugin
         {
             Debug.Write(LogType.Info, $"Steam settings found. AppId = {_settings.AppId}.");
         }
-        
+        if (_networkSettings == null)
+        {
+            Debug.LogError("No network settings found. Ensure you've added the network public dependency and module. See https://docs.flaxengine.com/manual/networking/high-level.html#scripting-integration for more details. Forcing Shutdown.");
+            Engine.RequestExit();
+        }
+        else
+        {
+            Debug.Write(LogType.Info, $"Network settings found. NetworkDriver = {_networkSettings.NetworkDriver}");
+        }
+
 #if FLAX_EDITOR
         if (!_settings.InitializeInEditor)
             return;
@@ -88,7 +98,7 @@ public class FacepunchSteamworksPlugin : GamePlugin
     /// </summary>
     public void InitializeSteam()
     {
-        if (_settings == null || SteamClient.IsValid)
+        if (_settings == null || _networkSettings == null || SteamClient.IsValid)
             return;
 
         try
@@ -118,10 +128,12 @@ public class FacepunchSteamworksPlugin : GamePlugin
     /// <param name="targetSteamID">The target steam id to connect to.</param>
     public void StartClient(ulong targetSteamID)
     {
-        if (NetworkManager.Peer.NetworkDriver is FacepunchNetworkDriver networkDriver)
+        if (_networkSettings.NetworkDriver.EndsWith("FacepunchNetworkDriver"))
         {
-            networkDriver.TargetSteamId = targetSteamID;
+            _settings.TargetSteamId = targetSteamID;
             NetworkManager.StartClient();
+            FacepunchNetworkDriver networkDriver = (FacepunchNetworkDriver)NetworkManager.Peer.NetworkDriver;
+            Debug.Log(networkDriver.TargetSteamId);
         }
         else
         {
