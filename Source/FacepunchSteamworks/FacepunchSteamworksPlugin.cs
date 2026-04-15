@@ -1,9 +1,11 @@
 #if !EXCLUDE_STEAMWORKS
 
-using System;
+using FlaxEditor.Content.Settings;
 using FlaxEngine;
 using FlaxEngine.Networking;
 using Steamworks;
+using System;
+using System.ComponentModel;
 using SettingsBase = FlaxEngine.SettingsBase;
 
 namespace FacepunchSteamworks;
@@ -38,6 +40,7 @@ public class FacepunchSteamworksPlugin : GamePlugin
     public FacepunchSteamSettings Settings => _settings;
     
     private FacepunchSteamSettings _settings;
+    private NetworkSettings _networkSettings;
 
     /// <inheritdoc />
     public override void Initialize()
@@ -45,6 +48,7 @@ public class FacepunchSteamworksPlugin : GamePlugin
         base.Initialize();
 
         _settings = Engine.GetCustomSettings("Steam")?.Instance as FacepunchSteamSettings;
+        _networkSettings = GameSettings.Load<NetworkSettings>();
         if (_settings == null)
         {
             Debug.LogError("No steam settings found. Ensure you've created custom settings of type FacepunchSteamSettings, and that you've added it in [ GameSettings > Other Settings > Custom Settings ] and name it \"Steam\". Forcing Shutdown.");
@@ -102,7 +106,7 @@ public class FacepunchSteamworksPlugin : GamePlugin
     /// </summary>
     public void StartHost()
     {
-        if (NetworkManager.Peer.NetworkDriver is FacepunchNetworkDriver)
+        if (_networkSettings.NetworkDriver.EndsWith("FacepunchNetworkDriver"))
             NetworkManager.StartHost();
         else
             Debug.LogWarning($"Failed to start host due to `NetworkDriver` not being set to `FacepunchNetworkDriver`.");
