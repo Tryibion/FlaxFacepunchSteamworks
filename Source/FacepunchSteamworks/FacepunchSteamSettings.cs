@@ -35,5 +35,6 @@ public class FacepunchSteamSettings : SettingsBase
     /// <summary>
     /// The host or server steam id to join. Set this using StartClient(ulong)
     /// </summary>
+    [NoSerialize, HideInEditor]
     public ulong TargetSteamId = 0;
 }
