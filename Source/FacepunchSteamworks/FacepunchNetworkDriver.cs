@@ -7,8 +7,6 @@ using Steamworks.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Debug = FlaxEngine.Debug;
 
 namespace FacepunchSteamworks;
 
