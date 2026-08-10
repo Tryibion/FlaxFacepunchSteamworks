@@ -31,10 +31,4 @@ public class FacepunchSteamSettings : SettingsBase
     /// The steam app id. 480 is SpaceWars.
     /// </summary>
     public uint AppId = 480;
-
-    /// <summary>
-    /// The host or server steam id to join. Set this using StartClient(ulong)
-    /// </summary>
-    [NoSerialize, HideInEditor]
-    public ulong TargetSteamId = 0;
 }

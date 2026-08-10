@@ -37,8 +37,14 @@ public class FacepunchSteamworksPlugin : GamePlugin
     /// </summary>
     public FacepunchSteamSettings Settings => _settings;
     
+    /// <summary>
+    /// The target steam id. Only available once client has started.
+    /// </summary>
+    public ulong TargetSteamId => _targetSteamId != 0 ? _targetSteamId : ((FacepunchNetworkDriver)NetworkManager.Peer.NetworkDriver).TargetSteamId;
+    
     private FacepunchSteamSettings _settings;
     private NetworkSettings _networkSettings;
+    private ulong _targetSteamId;
 
     /// <inheritdoc />
     public override void Initialize()
@@ -128,10 +134,8 @@ public class FacepunchSteamworksPlugin : GamePlugin
     {
         if (_networkSettings.NetworkDriver.EndsWith("FacepunchNetworkDriver"))
         {
-            _settings.TargetSteamId = targetSteamID;
+            _targetSteamId = targetSteamID;
             NetworkManager.StartClient();
-            FacepunchNetworkDriver networkDriver = (FacepunchNetworkDriver)NetworkManager.Peer.NetworkDriver;
-            Debug.Log(networkDriver.TargetSteamId);
         }
         else
         {
@@ -141,6 +145,9 @@ public class FacepunchSteamworksPlugin : GamePlugin
 
     private void OnDebugCallback(CallbackType type, string message, bool server)
     {
+        // Don't log unsupported messages
+        if (message.Contains("not in sdk", StringComparison.OrdinalIgnoreCase))
+            return;
         Debug.Write(LogType.Info, $"Type: {type}, Server: {server}, Message: {message}");
     }
 

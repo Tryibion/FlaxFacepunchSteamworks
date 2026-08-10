@@ -44,7 +44,6 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         _networkPeer = peer;
         _config = config;
         UserSteamId = SteamClient.SteamId;
-        TargetSteamId = PluginManager.GetPlugin<FacepunchSteamworksPlugin>().Settings.TargetSteamId;
 
         SteamNetworkingUtils.SendBufferSize = config.MessageSize;
         ConnectedClients = new Dictionary<ulong, Client>();
@@ -100,6 +99,21 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public bool Connect()
     {
+        // If not manually set, use the target steam id from the plugin. Assumed to be set in the plugin's StartClient method.
+        if (TargetSteamId == 0)
+        {
+            var pluginTargetId = PluginManager.GetPlugin<FacepunchSteamworksPlugin>().TargetSteamId;
+            if (pluginTargetId != 0)
+            {
+                TargetSteamId = pluginTargetId;
+            }
+            else
+            {
+                Debug.LogError("[Steam Client] Target Steam ID not set in driver or in plugin using StartClient");
+                return false;
+            }
+        }
+        
         Debug.Log($"[Steam Client] Initializing client connection (host Steam id: {TargetSteamId})");
 
         _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
