@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using FacepunchSteamworks;
+﻿using FacepunchSteamworks;
 using FlaxEditor;
 using FlaxEditor.Content;
 using FlaxEditor.Content.Settings;
+using FlaxEditor.GUI;
+using FlaxEditor.GUI.ContextMenu;
 using FlaxEngine;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace FacepunchSteamworksEditor;
 
@@ -15,7 +17,10 @@ namespace FacepunchSteamworksEditor;
 public class FacepunchSteamworksEditorPlugin : EditorPlugin
 {
     private AssetProxy _assetProxy;
-    
+    private JsonAsset _jsonAsset;
+    MainMenuButton _pluginButton;
+    ContextMenuButton _openButton;
+
     public override void InitializeEditor()
     {
         base.InitializeEditor();
@@ -30,19 +35,33 @@ public class FacepunchSteamworksEditorPlugin : EditorPlugin
         {
             Editor.SaveJsonAsset(settingsPath, new FacepunchSteamSettings());
         }
-        var jsonAsset = Engine.GetCustomSettings("Steam");
-        if (jsonAsset == null)
+        _jsonAsset = Engine.GetCustomSettings("Steam");
+        if (_jsonAsset == null)
         {
-            jsonAsset = Content.LoadAsync<JsonAsset>(settingsPath);
-            GameSettings.SetCustomSettings("Steam", jsonAsset);
+            _jsonAsset = Content.LoadAsync<JsonAsset>(settingsPath);
+            GameSettings.SetCustomSettings("Steam", _jsonAsset);
         }
-        
+
+        _pluginButton = Editor.UI.MainMenu.GetOrAddButton("Plugins");
+        _openButton = _pluginButton.ContextMenu.AddButton("Open Facepunch Steamworks Settings", OpenJsonAsset);
+
         Editor.ContentDatabase.Rebuild(true);
+    }
+
+    private void OpenJsonAsset()
+    {
+        Editor.ContentEditing.Open(_jsonAsset);
     }
 
     public override void Deinitialize()
     {
+        _openButton.Clicked -= OpenJsonAsset;
+        Content.UnloadAsset(_jsonAsset);
+        _jsonAsset = null;
         Editor.ContentDatabase.Proxy.Remove(_assetProxy);
+        _openButton.Dispose();
+        _openButton = null;
+        _pluginButton = null;
         _assetProxy = null;
         GameCooker.DeployFiles -= OnDeployFiles;
         

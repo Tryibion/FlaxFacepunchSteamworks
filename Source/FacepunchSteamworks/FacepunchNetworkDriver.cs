@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿#if !EXCLUDE_STEAMWORKS
+
 using FlaxEngine;
 using FlaxEngine.Networking;
 using Steamworks;
 using Steamworks.Data;
-using Debug = FlaxEngine.Debug;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FacepunchSteamworks;
-
 
 /// <summary>
 /// Facepunch Network Driver.
@@ -47,8 +47,6 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
         SteamNetworkingUtils.SendBufferSize = config.MessageSize;
         ConnectedClients = new Dictionary<ulong, Client>();
-
-        SteamNetworkingUtils.InitRelayNetworkAccess();
 
         Scripting.Update += OnUpdate;
 
@@ -101,6 +99,21 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 
     public bool Connect()
     {
+        // If not manually set, use the target steam id from the plugin. Assumed to be set in the plugin's StartClient method.
+        if (TargetSteamId == 0)
+        {
+            var pluginTargetId = PluginManager.GetPlugin<FacepunchSteamworksPlugin>().TargetSteamId;
+            if (pluginTargetId != 0)
+            {
+                TargetSteamId = pluginTargetId;
+            }
+            else
+            {
+                Debug.LogError("[Steam Client] Target Steam ID not set in driver or in plugin using StartClient");
+                return false;
+            }
+        }
+        
         Debug.Log($"[Steam Client] Initializing client connection (host Steam id: {TargetSteamId})");
 
         _connectionManager = SteamNetworkingSockets.ConnectRelay<SteamNetworkConnectionManager>(TargetSteamId);
@@ -293,3 +306,5 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         };
     }
 }
+
+#endif

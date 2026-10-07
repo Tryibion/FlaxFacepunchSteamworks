@@ -1,4 +1,4 @@
-﻿using FlaxEditor.Content.Settings;
+﻿using FlaxEngine;
 
 namespace FacepunchSteamworks;
 
@@ -11,12 +11,12 @@ public class FacepunchSteamSettings : SettingsBase
     /// If true, initializes steam during the `FacepunchSteamworksPlugin` initialization.
     /// </summary>
     public bool InitializeSteamAutomatically = true;
-    
+
     /// <summary>
     /// If true, while not in the editor, the app will reboot if steam is required to start it.
     /// </summary>
     public bool RestartAppIfSteamRequires = true;
-    
+
     /// <summary>
     /// If true, while the build is not in release mode, the steam library will log callbacks.
     /// </summary>
@@ -26,7 +26,7 @@ public class FacepunchSteamSettings : SettingsBase
     /// If true, the steam library will be initialized in the editor.
     /// </summary>
     public bool InitializeInEditor = true;
-    
+
     /// <summary>
     /// The steam app id. 480 is SpaceWars.
     /// </summary>

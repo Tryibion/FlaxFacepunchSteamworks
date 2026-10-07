@@ -1,3 +1,5 @@
+#if !EXCLUDE_STEAMWORKS
+
 using System;
 using System.Runtime.InteropServices;
 using FlaxEngine;
@@ -59,3 +61,5 @@ public class SteamNetworkSocketManager : SocketManager
         NetworkEvent?.Invoke(NetworkEventType.Message, connection.Id, bytes);
     }
 }
+
+#endif

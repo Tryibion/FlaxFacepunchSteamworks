@@ -1,3 +1,5 @@
+#if !EXCLUDE_STEAMWORKS
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -12,6 +14,11 @@ public class SteamNetworkConnectionManager : ConnectionManager
     public FacepunchNetworkDriver Driver;
 
     public event Action<NetworkEventType, ulong, byte[]> NetworkEvent;
+
+    public override void OnConnecting(ConnectionInfo info)
+    {
+        base.OnConnecting(info);
+    }
 
     public override void OnConnected(ConnectionInfo info)
     {
@@ -35,3 +42,5 @@ public class SteamNetworkConnectionManager : ConnectionManager
         NetworkEvent?.Invoke(NetworkEventType.Message, Driver.TargetSteamId, bytes);
     }
 }
+
+#endif
