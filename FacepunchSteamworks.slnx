@@ -1,0 +1,56 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Editor.Debug" />
+    <BuildType Name="Editor.Development" />
+    <BuildType Name="Editor.Release" />
+    <BuildType Name="Game.Debug" />
+    <BuildType Name="Game.Development" />
+    <BuildType Name="Game.Release" />
+    <Platform Name="ARM64" />
+    <Platform Name="Win64" />
+  </Configurations>
+  <Folder Name="/Flax/">
+    <Project Path="Cache/Projects/Flax.vcxproj" Id="2c05fdb9-9a45-4485-b5f7-2acf28bce3d3">
+      <BuildType Solution="Editor.Debug|*" Project="Editor.Windows.Debug" />
+      <BuildType Solution="Editor.Development|*" Project="Editor.Windows.Development" />
+      <BuildType Solution="Editor.Release|*" Project="Editor.Windows.Release" />
+      <BuildType Solution="Game.Debug|*" Project="Game.Windows.Debug" />
+      <BuildType Solution="Game.Development|*" Project="Game.Windows.Development" />
+      <BuildType Solution="Game.Release|*" Project="Game.Windows.Release" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="Cache/Projects/FacepunchSteamworks.vcxproj" Id="99519091-8369-4c8b-b296-2720480b37c0">
+    <BuildType Solution="Editor.Debug|*" Project="Editor.Windows.Debug" />
+    <BuildType Solution="Editor.Development|*" Project="Editor.Windows.Development" />
+    <BuildType Solution="Editor.Release|*" Project="Editor.Windows.Release" />
+    <BuildType Solution="Game.Debug|*" Project="Game.Windows.Debug" />
+    <BuildType Solution="Game.Development|*" Project="Game.Windows.Development" />
+    <BuildType Solution="Game.Release|*" Project="Game.Windows.Release" />
+    <Platform Solution="*|Win64" Project="x64" />
+  </Project>
+  <Project Path="Source/FacepunchSteamworks.CSharp.csproj">
+    <BuildType Solution="Editor.Debug|*" Project="Editor.Windows.Debug" />
+    <BuildType Solution="Editor.Development|*" Project="Editor.Windows.Development" />
+    <BuildType Solution="Editor.Release|*" Project="Editor.Windows.Release" />
+    <BuildType Solution="Game.Debug|*" Project="Game.Windows.Debug" />
+    <BuildType Solution="Game.Development|*" Project="Game.Windows.Development" />
+    <BuildType Solution="Game.Release|*" Project="Game.Windows.Release" />
+    <Platform Solution="*|Win64" Project="x64" />
+  </Project>
+  <Project Path="Source/FacepunchSteamworksEditor.csproj">
+    <BuildDependency Project="Source/FacepunchSteamworks.CSharp.csproj" />
+    <BuildType Solution="Editor.Debug|*" Project="Editor.Windows.Debug" />
+    <BuildType Solution="Editor.Development|*" Project="Editor.Windows.Development" />
+    <BuildType Solution="Editor.Release|*" Project="Editor.Windows.Release" />
+    <BuildType Solution="Game.Debug|*" Project="Game.Windows.Debug" />
+    <BuildType Solution="Game.Development|*" Project="Game.Windows.Development" />
+    <BuildType Solution="Game.Release|*" Project="Game.Windows.Release" />
+    <Platform Solution="*|Win64" Project="x64" />
+  </Project>
+  <Project Path="Cache/Projects/BuildScripts.csproj">
+    <BuildType Project="Debug" />
+    <Build Project="false" />
+  </Project>
+</Solution>

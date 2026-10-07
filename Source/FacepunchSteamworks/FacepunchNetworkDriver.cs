@@ -172,7 +172,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         ev.Sender.ConnectionId = (uint)id;
 
         ev.Message = _networkPeer.CreateMessage();
-        ev.Message.Length = (uint)data.Length;
+        ev.Message.BufferSize = (uint)data.Length;
         unsafe
         {
             fixed (byte* ptr = data)
@@ -238,7 +238,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
         unsafe
         {
             var ptr = (IntPtr)message.Buffer;
-            var length = (int)message.Length;
+            var length = (int)message.BufferSize;
             connection.SendMessage(ptr, length, ConvertToSendType(channelType));
         }
     }
