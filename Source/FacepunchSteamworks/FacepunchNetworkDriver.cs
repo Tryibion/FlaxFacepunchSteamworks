@@ -258,7 +258,7 @@ public class FacepunchNetworkDriver : FlaxEngine.Object, INetworkDriver
 #if FLAX_1_13_OR_NEWER
             var length = (int)message.BufferSize;
 #else
-            ev.Message.Length = (uint)data.Length;
+            var length = = (uint)data.Length;
 #endif
             connection.SendMessage(ptr, length, ConvertToSendType(channelType));
         }
